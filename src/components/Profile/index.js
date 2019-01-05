@@ -3,32 +3,40 @@ import { Query } from "react-apollo";
 import gql from "graphql-tag";
 
 import Loading from "../common/Loading";
+import RepositoryList, { REPOSITORY_FRAGMENT } from "../Repository";
+import ErrorMessage from "../common/Error";
 
 const GET_CURRENT_USER = gql`
   {
     viewer {
-      login
-      name
+      repositories(first: 5, orderBy: { direction: DESC, field: STARGAZERS }) {
+        edges {
+          node {
+            ...repository
+          }
+        }
+      }
     }
   }
+
+  ${REPOSITORY_FRAGMENT}
 `;
 
 const Profile = () => (
   <Query query={GET_CURRENT_USER}>
-    {({ data, loading }) => {
+    {({ data, loading, error }) => {
+      if (error) {
+        console.error(error);
+        return <ErrorMessage error={error} />;
+      }
+
       const { viewer } = data;
 
       if (loading || !viewer) {
         return <Loading />;
       }
 
-      const { name, login } = viewer;
-
-      return (
-        <div>
-          {name} {login}
-        </div>
-      );
+      return <RepositoryList repositories={viewer.repositories} />;
     }}
   </Query>
 );
