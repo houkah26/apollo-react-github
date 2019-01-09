@@ -6,6 +6,7 @@ import Link from "../../common/Link";
 import Button from "../../common/Button";
 
 import "./index.css";
+import { REPOSITORY_FRAGMENT } from "../fragments";
 
 const STAR_REPOSITORY = gql`
   mutation($id: ID!) {
@@ -13,9 +14,6 @@ const STAR_REPOSITORY = gql`
       starrable {
         id
         viewerHasStarred
-        stargazers {
-          totalCount
-        }
       }
     }
   }
@@ -27,9 +25,6 @@ const UNSTAR_REPOSITORY = gql`
       starrable {
         id
         viewerHasStarred
-        stargazers {
-          totalCount
-        }
       }
     }
   }
@@ -45,6 +40,48 @@ const UPDATE_REPOSITORY_SUBSCRIPTION = gql`
     }
   }
 `;
+
+const updateStarCount = (client, repositoryId, add) => {
+  const repository = client.readFragment({
+    id: `Repository:${repositoryId}`,
+    fragment: REPOSITORY_FRAGMENT
+  });
+
+  const totalCount = repository.stargazers.totalCount + (add ? 1 : -1);
+
+  client.writeFragment({
+    id: `Repository:${repositoryId}`,
+    fragment: REPOSITORY_FRAGMENT,
+    data: {
+      ...repository,
+      stargazers: {
+        ...repository.stargazers,
+        totalCount
+      }
+    }
+  });
+};
+
+const updateWatchCount = (client, repositoryId, add) => {
+  const repository = client.readFragment({
+    id: `Repository:${repositoryId}`,
+    fragment: REPOSITORY_FRAGMENT
+  });
+
+  const totalCount = repository.watchers.totalCount + (add ? 1 : -1);
+
+  client.writeFragment({
+    id: `Repository:${repositoryId}`,
+    fragment: REPOSITORY_FRAGMENT,
+    data: {
+      ...repository,
+      watchers: {
+        ...repository.watchers,
+        totalCount
+      }
+    }
+  });
+};
 
 const RepositoryItem = ({
   id,
@@ -68,6 +105,7 @@ const RepositoryItem = ({
         <Mutation
           mutation={viewerHasStarred ? UNSTAR_REPOSITORY : STAR_REPOSITORY}
           variables={{ id }}
+          update={client => updateStarCount(client, id, !viewerHasStarred)}
         >
           {(mutate, { data, loading, error }) => (
             <Button className="RepositoryItem-title-action" onClick={mutate}>
@@ -75,26 +113,7 @@ const RepositoryItem = ({
             </Button>
           )}
         </Mutation>
-        {/* !viewerHasStarred ? (
-          <Mutation mutation={STAR_REPOSITORY} variables={{ id }}>
-            {(addStar, { data, loading, error }) => (
-              <Button className="RepositoryItem-title-action" onClick={addStar}>
-                {stargazers.totalCount} Star
-              </Button>
-            )}
-          </Mutation>
-        ) : (
-          <Mutation mutation={UNSTAR_REPOSITORY} variables={{ id }}>
-            {(removeStar, { data, loading, error }) => (
-              <Button
-                className="RepositoryItem-title-action"
-                onClick={removeStar}
-              >
-                {stargazers.totalCount} Unstar
-              </Button>
-            )}
-          </Mutation>
-        ) */}
+
         <Mutation
           mutation={UPDATE_REPOSITORY_SUBSCRIPTION}
           variables={{
@@ -104,9 +123,13 @@ const RepositoryItem = ({
                 ? "UNSUBSCRIBED"
                 : "SUBSCRIBED"
           }}
+          update={client =>
+            updateWatchCount(client, id, viewerSubscription !== "SUBSCRIBED")
+          }
         >
           {(mutate, { data, loading, error }) => (
             <Button className="RepositoryItem-title-action" onClick={mutate}>
+              {watchers.totalCount}{" "}
               {viewerSubscription === "SUBSCRIBED" ? "Unwatch" : "Watch"}
             </Button>
           )}
