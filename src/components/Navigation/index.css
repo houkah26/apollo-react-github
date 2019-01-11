@@ -30,6 +30,10 @@
   color: #ffffff;
 }
 
+.Navigation-link a.active {
+  color: #ffeb3b;
+}
+
 .Navigation-search {
   padding: 0 10px;
 }
