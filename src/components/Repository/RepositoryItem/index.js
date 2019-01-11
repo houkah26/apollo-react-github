@@ -8,6 +8,87 @@ import Button from "../../common/Button";
 import "./index.css";
 import { REPOSITORY_FRAGMENT } from "../fragments";
 
+const RepositoryItem = ({
+  id,
+  name,
+  url,
+  descriptionHTML,
+  primaryLanguage,
+  owner,
+  stargazers,
+  watchers,
+  viewerSubscription,
+  viewerHasStarred
+}) => (
+  <div>
+    <div className="RepositoryItem-title">
+      <h2>
+        <Link href={url}>{name}</Link>
+      </h2>
+
+      <div>
+        <Mutation
+          mutation={viewerHasStarred ? UNSTAR_REPOSITORY : STAR_REPOSITORY}
+          variables={{ id }}
+          update={client => updateStarCount(client, id, !viewerHasStarred)}
+        >
+          {(mutate, { data, loading, error }) => (
+            <Button className="RepositoryItem-title-action" onClick={mutate}>
+              {stargazers.totalCount} {viewerHasStarred ? "Unstar" : "Star"}
+            </Button>
+          )}
+        </Mutation>
+
+        <Mutation
+          mutation={UPDATE_REPOSITORY_SUBSCRIPTION}
+          variables={{
+            id,
+            state:
+              viewerSubscription === "SUBSCRIBED"
+                ? "UNSUBSCRIBED"
+                : "SUBSCRIBED"
+          }}
+          update={client =>
+            updateWatchCount(client, id, viewerSubscription !== "SUBSCRIBED")
+          }
+          optimisticResponse={optimisticUpdateSubscription(
+            viewerSubscription,
+            id
+          )}
+        >
+          {(mutate, { data, loading, error }) => (
+            <Button className="RepositoryItem-title-action" onClick={mutate}>
+              {watchers.totalCount}{" "}
+              {viewerSubscription === "SUBSCRIBED" ? "Unwatch" : "Watch"}
+            </Button>
+          )}
+        </Mutation>
+      </div>
+    </div>
+
+    <div className="RepositoryItem-description">
+      <div
+        className="RepositoryItem-description-info"
+        dangerouslySetInnerHTML={{ __html: descriptionHTML }}
+      />
+      <div className="RepositoryItem-description-details">
+        <div>
+          {primaryLanguage && <span>Language: {primaryLanguage.name}</span>}
+        </div>
+        <div>
+          {owner && (
+            <span>
+              Owner: <a href={owner.url}>{owner.login}</a>
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+export default RepositoryItem;
+
 const STAR_REPOSITORY = gql`
   mutation($id: ID!) {
     addStar(input: { starrableId: $id }) {
@@ -94,84 +175,3 @@ const optimisticUpdateSubscription = (viewerSubscription, id) => ({
     }
   }
 });
-
-const RepositoryItem = ({
-  id,
-  name,
-  url,
-  descriptionHTML,
-  primaryLanguage,
-  owner,
-  stargazers,
-  watchers,
-  viewerSubscription,
-  viewerHasStarred
-}) => (
-  <div>
-    <div className="RepositoryItem-title">
-      <h2>
-        <Link href={url}>{name}</Link>
-      </h2>
-
-      <div>
-        <Mutation
-          mutation={viewerHasStarred ? UNSTAR_REPOSITORY : STAR_REPOSITORY}
-          variables={{ id }}
-          update={client => updateStarCount(client, id, !viewerHasStarred)}
-        >
-          {(mutate, { data, loading, error }) => (
-            <Button className="RepositoryItem-title-action" onClick={mutate}>
-              {stargazers.totalCount} {viewerHasStarred ? "Unstar" : "Star"}
-            </Button>
-          )}
-        </Mutation>
-
-        <Mutation
-          mutation={UPDATE_REPOSITORY_SUBSCRIPTION}
-          variables={{
-            id,
-            state:
-              viewerSubscription === "SUBSCRIBED"
-                ? "UNSUBSCRIBED"
-                : "SUBSCRIBED"
-          }}
-          update={client =>
-            updateWatchCount(client, id, viewerSubscription !== "SUBSCRIBED")
-          }
-          optimisticResponse={optimisticUpdateSubscription(
-            viewerSubscription,
-            id
-          )}
-        >
-          {(mutate, { data, loading, error }) => (
-            <Button className="RepositoryItem-title-action" onClick={mutate}>
-              {watchers.totalCount}{" "}
-              {viewerSubscription === "SUBSCRIBED" ? "Unwatch" : "Watch"}
-            </Button>
-          )}
-        </Mutation>
-      </div>
-    </div>
-
-    <div className="RepositoryItem-description">
-      <div
-        className="RepositoryItem-description-info"
-        dangerouslySetInnerHTML={{ __html: descriptionHTML }}
-      />
-      <div className="RepositoryItem-description-details">
-        <div>
-          {primaryLanguage && <span>Language: {primaryLanguage.name}</span>}
-        </div>
-        <div>
-          {owner && (
-            <span>
-              Owner: <a href={owner.url}>{owner.login}</a>
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-export default RepositoryItem;
