@@ -5,6 +5,8 @@ import { onError } from "apollo-link-error";
 import { ApolloLink } from "apollo-link";
 import { RetryLink } from "apollo-link-retry";
 
+// import { HttpLink } from "./link";
+
 const GITHUB_BASE_URL = "https://api.github.com/graphql";
 
 const httpLink = new HttpLink({

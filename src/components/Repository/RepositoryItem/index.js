@@ -83,6 +83,18 @@ const updateWatchCount = (client, repositoryId, add) => {
   });
 };
 
+const optimisticUpdateSubscription = (viewerSubscription, id) => ({
+  updateSubscription: {
+    __typename: "Mutation",
+    subscribable: {
+      __typename: "Repository",
+      id,
+      viewerSubscription:
+        viewerSubscription === "SUBSCRIBED" ? "UNSUBSCRIBED" : "SUBSCRIBED"
+    }
+  }
+});
+
 const RepositoryItem = ({
   id,
   name,
@@ -126,6 +138,10 @@ const RepositoryItem = ({
           update={client =>
             updateWatchCount(client, id, viewerSubscription !== "SUBSCRIBED")
           }
+          optimisticResponse={optimisticUpdateSubscription(
+            viewerSubscription,
+            id
+          )}
         >
           {(mutate, { data, loading, error }) => (
             <Button className="RepositoryItem-title-action" onClick={mutate}>
