@@ -2,12 +2,15 @@ import React, { Fragment } from "react";
 
 import RepositoryItem from "../RepositoryItem";
 import FetchMore from "../../FetchMore";
+import Issues from "../../Issue";
 
 const RepositoryList = ({ repositories, fetchMore, loading, entry }) => (
   <Fragment>
     {repositories.edges.map(({ node }) => (
       <div key={node.id} className="RepositoryItem">
         <RepositoryItem {...node} />
+
+        <Issues repositoryName={node.name} repositoryOwner={node.owner.login} />
       </div>
     ))}
 

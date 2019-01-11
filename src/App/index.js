@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 import { BrowserRouter as Router, Route } from "react-router-dom";
 
-import Profile from "../components/Profile";
+// import Profile from "../components/Profile";
+import Profile from "../components/Profile/indexHoC";
 import Organization from "../components/Organization";
 
 import * as routes from "../constants/routes";
