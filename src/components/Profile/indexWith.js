@@ -36,29 +36,29 @@ const Profile = () => (
 
 export default Profile;
 
-const GET_CURRENT_USER_REPOS = gql`
-  query($cursor: String) {
-    viewer {
-      repositories(
-        first: 5
-        orderBy: { direction: DESC, field: STARGAZERS }
-        after: $cursor
-      ) {
-        edges {
-          node {
-            ...repository
-          }
-        }
-        pageInfo {
-          endCursor
-          hasNextPage
-        }
-      }
-    }
-  }
+// const GET_CURRENT_USER_REPOS = gql`
+//   query($cursor: String) {
+//     viewer {
+//       repositories(
+//         first: 5
+//         orderBy: { direction: DESC, field: STARGAZERS }
+//         after: $cursor
+//       ) {
+//         edges {
+//           node {
+//             ...repository
+//           }
+//         }
+//         pageInfo {
+//           endCursor
+//           hasNextPage
+//         }
+//       }
+//     }
+//   }
 
-  ${REPOSITORY_FRAGMENT}
-`;
+//   ${REPOSITORY_FRAGMENT}
+// `;
 
 // import React, { Component } from 'react';
 // import { ApolloConsumer } from 'react-apollo';
